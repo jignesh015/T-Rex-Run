@@ -4,29 +4,41 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    public List<GameObject> groundPrefabs;
-    public Transform environmentParent, raptor;
+    public List<GameObject> groundPrefabs, obstaclePrefabs;
+    public Transform environmentParent, obstaclesParent, raptor;
 
-    public int groundIndex = 0, spawnedListLimit;
-    public float groundPlacementOffset, groundSpawnDistance;
+    [Header("Ground Spawn")]
+    public int groundIndex = 0;
+    public int groundSpawnedListLimit;
+    public float groundPlacementOffset, groundSpawnDistance; 
 
-    private Transform lastSpawnedGround;
+    [Header("Obstacle Spawn")]
+    public int obstacleIndex = 0;
+    public int obstacleSpawnedListLimit;
+    public float obstacleSpawnMinOffset, obstacleSpawnMaxOffset, obstacleDistance;
+
+    private Transform lastSpawnedGround, lastSpawnedObstacle, prevSpawnedObstacle;
     [SerializeField]
-    private List<GameObject> spawnedGroundList;
+    private List<GameObject> spawnedGroundList, spawnedObstacleList;
 
     // Start is called before the first frame update
     void Start()
     {
         SpawnGroundRandomly();
         SpawnGroundRandomly();
+
+        SpawnObstacle();
+        SpawnObstacle();
     }
 
     // Update is called once per frame
     void Update()
     {
         if (Vector3.Distance(raptor.position, lastSpawnedGround.position) < groundSpawnDistance) SpawnGroundRandomly();
+        if (Vector3.Distance(raptor.position, lastSpawnedObstacle.position) < obstacleDistance) SpawnObstacle();
 
-        if (spawnedGroundList.Count > spawnedListLimit) DeleteGround();
+        if (spawnedGroundList.Count > groundSpawnedListLimit) DeleteGround();
+        if (spawnedObstacleList.Count > obstacleSpawnedListLimit) DeleteObstacle();
     }
 
     public void SpawnGroundRandomly()
@@ -45,5 +57,25 @@ public class GameController : MonoBehaviour
     {
         Destroy(spawnedGroundList[0]);
         spawnedGroundList.RemoveAt(0);
+    }
+
+    public void SpawnObstacle()
+    {
+        int i = Random.Range(0, obstaclePrefabs.Count);
+        GameObject obstacle = Instantiate(obstaclePrefabs[i], obstaclesParent);
+        spawnedObstacleList.Add(obstacle);
+        lastSpawnedObstacle = obstacle.transform;
+        lastSpawnedObstacle.position = new Vector3((prevSpawnedObstacle == null ? 0 : prevSpawnedObstacle.position.x) 
+            + Random.Range(obstacleSpawnMinOffset, obstacleSpawnMaxOffset),
+            obstacle.name.Contains("Cactus") ? -0.5f : Random.Range(1.5f, 3.5f), 0);
+
+        obstacleIndex++;
+        prevSpawnedObstacle = lastSpawnedObstacle;
+    }
+
+    void DeleteObstacle()
+    {
+        Destroy(spawnedObstacleList[0]);
+        spawnedObstacleList.RemoveAt(0);
     }
 }

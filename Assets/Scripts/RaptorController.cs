@@ -6,7 +6,7 @@ public class RaptorController : MonoBehaviour
 {
     public enum RaptorStatus { Idle, Walk, JumpStart, JumpMid, JumpEnd, Dead };
 
-    public Transform raptor;
+    public Transform raptor, raptorCollider;
     public Animator raptorAnimator;
     public List<string> animatorTriggers;
 
@@ -15,11 +15,12 @@ public class RaptorController : MonoBehaviour
 
     [Header("Raptor control variables")]
     public float jumpTime;
-    public float speed;
+    public float walkSpeed, jumpSpeed;
+    public Vector3 walkColliderScale, jumpColliderScale;
 
 
     private bool hasGameStarted = false;
-    private float jumpStartTime;
+    private float jumpStartTime, speed;
 
     void Start()
     {
@@ -38,6 +39,8 @@ public class RaptorController : MonoBehaviour
 
         if (hasGameStarted && raptorStatus != RaptorStatus.Dead)
         {
+            speed = raptorStatus == RaptorStatus.JumpStart ? jumpSpeed : walkSpeed;
+
             //Move raptor forward
             transform.Translate(Vector3.forward * Time.deltaTime * speed);
 
@@ -68,9 +71,11 @@ public class RaptorController : MonoBehaviour
                 break;
             case RaptorStatus.Walk:
                 raptorAnimator.SetTrigger(animatorTriggers[1]);
+                raptorCollider.localScale = walkColliderScale;
                 break;
             case RaptorStatus.JumpStart:
                 raptorAnimator.SetTrigger(animatorTriggers[2]);
+                raptorCollider.localScale = jumpColliderScale;
                 break;
             case RaptorStatus.JumpMid:
                 break;
