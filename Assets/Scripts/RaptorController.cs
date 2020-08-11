@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RaptorController : MonoBehaviour
 {
@@ -18,12 +19,18 @@ public class RaptorController : MonoBehaviour
     public float walkSpeed, jumpSpeed;
     public Vector3 walkColliderScale, jumpColliderScale;
 
+    [Header("SFX")]
+    public AudioClip jumpSFX;
+    public AudioClip failSFX;
+
 
     private bool hasGameStarted = false;
     private float jumpStartTime, speed;
+    private AudioSource audioSource;
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         ChangeRaptorStatus(RaptorStatus.Idle);
     }
 
@@ -34,6 +41,7 @@ public class RaptorController : MonoBehaviour
         {
             hasGameStarted = true;
             ChangeRaptorStatus(RaptorStatus.Walk);
+            GameController.Instance.StartScoreCounter();
             return;
         }
 
@@ -59,6 +67,12 @@ public class RaptorController : MonoBehaviour
                 if (Time.time - jumpStartTime > jumpTime) { ChangeRaptorStatus(RaptorStatus.Walk); }
             }
         }
+
+        if (raptorStatus == RaptorStatus.Dead)
+        {
+            if (Input.GetKeyDown(KeyCode.Space)) 
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
 
     public void ChangeRaptorStatus(RaptorStatus _status)
@@ -74,6 +88,7 @@ public class RaptorController : MonoBehaviour
                 raptorCollider.localScale = walkColliderScale;
                 break;
             case RaptorStatus.JumpStart:
+                PlaySFX(0);
                 raptorAnimator.SetTrigger(animatorTriggers[2]);
                 raptorCollider.localScale = jumpColliderScale;
                 break;
@@ -87,4 +102,11 @@ public class RaptorController : MonoBehaviour
                 break;
         }
     }
+
+    public void PlaySFX(int _index)
+    {
+        audioSource.clip = _index == 0 ? jumpSFX : failSFX;
+        audioSource.Play();
+    }
+
 }

@@ -22,6 +22,7 @@ public class ObstacleController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Raptor"))
         {
+            GameController.Instance.GameOver();
             Debug.Log("<color=red>Collision occurred</color>");
         }
     }
